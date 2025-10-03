@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { prisma } from '../lib/prisma';
+import { prisma } from '../app/src/lib/prisma';
 
 async function seedAdmin() {
   const existingAdmin = await prisma.admin.findUnique({ where: { username: 'admin' } });

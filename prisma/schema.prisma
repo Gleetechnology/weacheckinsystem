@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Attendee {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  phone       String?
+  qrData      String   @unique
+  qrCode      String
+  checkedIn   Boolean  @default(false)
+  checkedInAt DateTime?
+  createdAt   DateTime @default(now())
+  // Original column names from uploaded Excel
+  nameCol     String?
+  emailCol    String?
+  phoneCol    String?
+  // All additional columns from Excel
+  extraData   String?  // JSON string of additional columns
+}

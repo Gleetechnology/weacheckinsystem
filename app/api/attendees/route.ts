@@ -12,13 +12,25 @@ export async function GET(request: NextRequest) {
       OR: [
         { name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search, mode: 'insensitive' } },
+        { attendeeId: { contains: search, mode: 'insensitive' } },
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { organization: { contains: search, mode: 'insensitive' } },
+        { preferredTitle: { contains: search, mode: 'insensitive' } },
+        { positionInOrganization: { contains: search, mode: 'insensitive' } },
+        { regionOfWork: { contains: search, mode: 'insensitive' } },
+        { phoneKorean: { contains: search, mode: 'insensitive' } },
+        { koreanText: { contains: search, mode: 'insensitive' } },
+        { positionKorean: { contains: search, mode: 'insensitive' } },
+        { englishText: { contains: search, mode: 'insensitive' } },
+        { extraData: { contains: search, mode: 'insensitive' } }, // Search in JSON extraData
       ],
     } : {};
 
     const [attendees, total] = await Promise.all([
       prisma.attendee.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'asc' },
         skip: (page - 1) * limit,
         take: limit,
       }),

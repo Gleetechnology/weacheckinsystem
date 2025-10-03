@@ -22,19 +22,45 @@ model Admin {
 }
 
 model Attendee {
-  id          String   @id @default(cuid())
-  name        String
-  email       String   @unique
-  phone       String?
-  qrData      String   @unique
-  qrCode      String
-  checkedIn   Boolean  @default(false)
-  checkedInAt DateTime?
-  createdAt   DateTime @default(now())
-  // Original column names from uploaded Excel
-  nameCol     String?
-  emailCol    String?
-  phoneCol    String?
-  // All additional columns from Excel
-  extraData   String?  // JSON string of additional columns
+    id                      String   @id @default(cuid())
+    name                    String
+    email                   String?  @unique
+    phone                   String?
+    qrData                  String
+    qrCode                  String
+    checkedIn               Boolean  @default(false)
+    checkedInAt             DateTime?
+    createdAt               DateTime @default(now())
+    // Original column names from uploaded Excel
+    nameCol                 String?
+    emailCol                String?
+    phoneCol                String?
+    // New specific columns from Excel
+    attendeeId              String?  // ID
+    fullName                String?  // Full Name
+    column2                 String?  // 열2
+    organization            String?  // Organization
+    positionInOrganization  String?  // Position in Organization
+    preferredTitle          String?  // Preferred Title (Optional)
+    regionOfWork            String?  // Region of Work
+    phoneKorean             String?  // 번호
+    koreanText              String?  // 한글
+    positionKorean          String?  // 직분
+    positionEnglish         String?  // 영어직분
+    englishText             String?  // 영어
+    // All additional columns from Excel (for backward compatibility)
+    extraData               String?  // JSON string of additional columns
+}
+
+model Notification {
+    id          String   @id @default(cuid())
+    title       String
+    message     String
+    type        String   // 'info', 'success', 'warning', 'error'
+    read        Boolean  @default(false)
+    createdAt   DateTime @default(now())
+    adminId     String?  // Optional: link to specific admin if needed
+    attendeeId  String?  // Optional: link to attendee if notification is about them
+
+    @@map("notifications")
 }

@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find attendee by QR code data
-    const attendee = await prisma.attendee.findUnique({ where: { qrData } });
+    const attendee = await prisma.attendee.findFirst({ where: { qrData } });
 
     if (!attendee) {
       return NextResponse.json({ error: 'Data is not available for check-in' }, { status: 404 });
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const updatedAttendee = await prisma.attendee.update({
-      where: { qrData },
+      where: { id: attendee.id },
       data: { checkedIn: true, checkedInAt: new Date() },
     });
 

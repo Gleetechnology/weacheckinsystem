@@ -10,15 +10,20 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Admin {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  username      String   @unique
+  password      String
+  email         String?  @unique
+  profilePicture String?
+  firstName     String?
+  lastName      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
 }
 
 model Attendee {
@@ -63,4 +68,17 @@ model Notification {
     attendeeId  String?  // Optional: link to attendee if notification is about them
 
     @@map("notifications")
+}
+
+model Setting {
+    id          String   @id @default(cuid())
+    key         String   @unique
+    value       String
+    type        String   // 'string', 'number', 'boolean', 'json'
+    category    String   // 'general', 'notifications', 'security', etc.
+    description String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    @@map("settings")
 }

@@ -55,33 +55,44 @@ export async function GET(request: NextRequest) {
       });
 
       // Add QR code image if available
-      if (attendee.qrCode) {
-        // Convert data URL to buffer
-        const base64Data = attendee.qrCode.split(',')[1];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const imageBuffer = Buffer.from(base64Data, 'base64') as any;
+      if (attendee.qrCode && attendee.qrCode.startsWith('data:image')) {
+        try {
+          // Convert data URL to buffer
+          const base64Data = attendee.qrCode.split(',')[1];
+          if (base64Data) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const imageBuffer = Buffer.from(base64Data, 'base64') as any;
 
-        // Add image to workbook
-        const imageId = workbook.addImage({
-          buffer: imageBuffer,
-          extension: 'png',
-        });
+            // Add image to workbook
+            const imageId = workbook.addImage({
+              buffer: imageBuffer,
+              extension: 'png',
+            });
 
-        // Add image to cell (column F is QR Code column, 0-indexed as 5)
-        worksheet.addImage(imageId, {
-          tl: { col: 5, row: index + 1 }, // +1 because row 0 is header
-          ext: { width: 100, height: 100 },
-        });
+            // Add image to cell (column R is QR Code column, 0-indexed as 16)
+            worksheet.addImage(imageId, {
+              tl: { col: 16, row: index + 1 }, // +1 because row 0 is header
+              ext: { width: 100, height: 100 },
+            });
+          }
+        } catch (imageError) {
+          console.error(`Failed to process QR code for attendee ${attendee.name}:`, imageError);
+          // Continue without adding the image
+        }
       }
     });
 
     // Generate buffer
     const buffer = await workbook.xlsx.writeBuffer();
 
-    return new NextResponse(buffer, {
+    // Ensure buffer is properly typed
+    const arrayBuffer = buffer as ArrayBuffer;
+
+    return new Response(arrayBuffer, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': 'attachment; filename="attendees_with_qr.xlsx"',
+        'Cache-Control': 'no-cache',
       },
     });
   } catch (error) {

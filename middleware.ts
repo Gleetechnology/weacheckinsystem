@@ -14,6 +14,12 @@ export function middleware(request: NextRequest) {
 
   console.log('Middleware check for:', request.url, 'Token:', token ? 'present' : 'missing');
 
+  // Allow download requests to pass through even without token for now
+  if (request.url.includes('/api/download/')) {
+    console.log('Allowing download request to pass through');
+    return NextResponse.next();
+  }
+
   if (!token) {
     console.log('No token provided');
     return NextResponse.json({ error: 'No token provided' }, { status: 401 });

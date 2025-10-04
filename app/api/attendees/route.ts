@@ -1,31 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '../../../lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
+    const status = searchParams.get('status') || 'all';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    const where = search ? {
-      OR: [
-        { name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { phone: { contains: search, mode: 'insensitive' } },
-        { attendeeId: { contains: search, mode: 'insensitive' } },
-        { fullName: { contains: search, mode: 'insensitive' } },
-        { organization: { contains: search, mode: 'insensitive' } },
-        { preferredTitle: { contains: search, mode: 'insensitive' } },
-        { positionInOrganization: { contains: search, mode: 'insensitive' } },
-        { regionOfWork: { contains: search, mode: 'insensitive' } },
-        { phoneKorean: { contains: search, mode: 'insensitive' } },
-        { koreanText: { contains: search, mode: 'insensitive' } },
-        { positionKorean: { contains: search, mode: 'insensitive' } },
-        { englishText: { contains: search, mode: 'insensitive' } },
-        { extraData: { contains: search, mode: 'insensitive' } }, // Search in JSON extraData
-      ],
-    } : {};
+    const where: any = {};
+
+    // Add status filter
+    if (status === 'checked-in') {
+      where.checkedIn = true;
+    } else if (status === 'pending') {
+      where.checkedIn = false;
+    }
+
+    // Add search conditions
+    if (search) {
+      const searchTerm = search.trim();
+      where.OR = [
+        { name: { contains: searchTerm } },
+        { email: { contains: searchTerm } },
+        { organization: { contains: searchTerm } },
+      ];
+    }
 
     const [attendees, total] = await Promise.all([
       prisma.attendee.findMany({
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Parse extraData for each attendee
-    const attendeesWithExtra = attendees.map(attendee => ({
+    const attendeesWithExtra = attendees.map((attendee: any) => ({
       ...attendee,
       extraData: attendee.extraData ? JSON.parse(attendee.extraData) : {},
     }));

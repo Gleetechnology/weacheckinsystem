@@ -29,6 +29,28 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Deploy on Netlify
+
+This app is configured for Netlify deployment.
+
+### Required Environment Variables
+
+Set the following environment variables in your Netlify dashboard:
+
+- `DATABASE_URL`: PostgreSQL connection string (e.g., `postgresql://user:password@host:port/database`)
+- `DIRECT_URL`: Direct PostgreSQL connection string (for migrations)
+- `JWT_SECRET`: Secret key for JWT token signing
+
+### Deployment Steps
+
+1. Connect your repository to Netlify
+2. Set the build settings:
+   - Build command: `prisma migrate deploy && npm run build`
+   - Publish directory: `.next`
+   - Node version: 18
+3. Add the environment variables above
+4. Deploy
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.

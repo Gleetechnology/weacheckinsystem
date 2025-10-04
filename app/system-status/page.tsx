@@ -29,7 +29,7 @@ export default function SystemStatusPage() {
     }
     setToken(storedToken);
     fetchSystemStatus();
-  }, []);
+  }, [router]);
 
   const fetchSystemStatus = async () => {
     try {

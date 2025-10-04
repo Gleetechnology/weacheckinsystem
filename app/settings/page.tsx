@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface AdminProfile {
   id: string;
@@ -26,13 +27,13 @@ export default function SettingsPage() {
       return;
     }
     setToken(storedToken);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (token) {
       fetchProfile();
     }
-  }, [token]);
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchProfile = async () => {
     try {
@@ -206,10 +207,13 @@ export default function SettingsPage() {
                   <div className="flex items-center space-x-6">
                     <div className="relative">
                       {profile?.profilePicture ? (
-                        <img
+                        <Image
                           src={profile.profilePicture}
                           alt="Profile"
+                          width={80}
+                          height={80}
                           className="h-20 w-20 rounded-full object-cover shadow-lg"
+                          unoptimized
                         />
                       ) : (
                         <div className="h-20 w-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg">

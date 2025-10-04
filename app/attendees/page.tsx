@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
+import Image from 'next/image';
 
 interface Attendee {
   id: string;
@@ -32,13 +32,6 @@ interface Attendee {
   createdAt: string;
 }
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  read: boolean;
-  createdAt: string;
-}
 
 interface Stats {
   total: number;
@@ -57,9 +50,6 @@ export default function AttendeesPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalAttendees, setTotalAttendees] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const router = useRouter();
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -71,32 +61,17 @@ export default function AttendeesPage() {
       return;
     }
     setToken(storedToken);
-  }, []);
+  }, [router]);
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.user-menu-container') && !target.closest('.notifications-container')) {
-        setShowUserMenu(false);
-        setShowNotifications(false);
-      }
-    };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   useEffect(() => {
     if (token) {
       fetchStats();
       fetchAttendees(1);
-      fetchNotifications();
       setPage(1);
     }
-  }, [token]);
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchStats = async () => {
     try {
@@ -142,77 +117,15 @@ export default function AttendeesPage() {
     }
   };
 
+  // We intentionally trigger on search/statusFilter only; token changes are handled elsewhere
   useEffect(() => {
     if (token) {
       fetchAttendees(1);
       setPage(1);
     }
-  }, [search, statusFilter]);
+  }, [search, statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch('/api/notifications?limit=10', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
 
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data.notifications || []);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
-  };
-
-  const markNotificationAsRead = async (notificationId: string) => {
-    try {
-      const res = await fetch(`/api/notifications/${notificationId}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.ok) {
-        setNotifications(notifications.map(notif =>
-          notif.id === notificationId ? { ...notif, read: true } : notif
-        ));
-      }
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
-
-  const debouncedSearch = useCallback((query: string) => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-    searchTimeoutRef.current = setTimeout(() => {
-      setSearch(query);
-      setPage(1);
-    }, 300); // 300ms debounce
-  }, []);
-
-  const handleSearch = (query: string) => {
-    setSearch(query);
-    setSearchInput(query);
-    setPage(1);
-  };
-
-  const handleSearchInputChange = (query: string) => {
-    setSearchInput(query);
-    debouncedSearch(query);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-    router.push('/login');
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
-
-  const unreadCount = notifications.filter(n => n.read === false).length;
 
   const getStatusBadge = (checkedIn: boolean, checkedInAt?: string) => {
     if (checkedIn) {
@@ -268,195 +181,7 @@ export default function AttendeesPage() {
                 <span className="font-medium">Back to Dashboard</span>
               </button>
 
-              {/* Enhanced Notifications */}
-              <div className="relative notifications-container">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowNotifications(!showNotifications);
-                  }}
-                  className="relative group p-2.5 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl hover:from-red-100 hover:to-pink-100 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 border border-red-200/50 cursor-pointer"
-                >
-                  <div className="relative flex items-center justify-center">
-                    <svg className="h-5 w-5 text-red-600 group-hover:text-red-700 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5V12h-5l5-5 5 5h-5v5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                    </svg>
-                    {unreadCount > 0 && (
-                      <div className="absolute -top-1 -right-1 h-5 w-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-xs text-white font-bold flex items-center justify-center shadow-lg animate-pulse border-2 border-white">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </div>
-                    )}
-                  </div>
-                </button>
 
-                {/* Enhanced Notifications Dropdown */}
-                {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-96 bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-200/50 z-50 animate-fade-in-up">
-                    <div className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                          <svg className="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5V12h-5l5-5 5 5h-5v5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                          </svg>
-                          Notifications
-                        </h3>
-                        <button
-                          onClick={() => {
-                            notifications.forEach(n => markNotificationAsRead(n.id));
-                          }}
-                          className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition-colors duration-200"
-                        >
-                          Mark all read
-                        </button>
-                      </div>
-
-                      {notifications.length > 0 ? (
-                        <div className="space-y-3 max-h-80 overflow-y-auto">
-                          {notifications.map((notification) => (
-                            <div
-                              key={notification.id}
-                              className={`p-4 rounded-xl cursor-pointer transition-all duration-200 ${
-                                notification.read === false
-                                  ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 shadow-sm hover:shadow-md'
-                                  : 'bg-gray-50/50 hover:bg-gray-100'
-                              }`}
-                              onClick={() => markNotificationAsRead(notification.id)}
-                            >
-                              <div className="flex items-start space-x-3">
-                                <div className={`flex-shrink-0 w-2 h-2 rounded-full mt-2.5 ${
-                                  notification.read === false ? 'bg-blue-500 animate-pulse' : 'bg-gray-400'
-                                }`}></div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <p className={`text-sm font-semibold truncate ${
-                                      notification.read === false ? 'text-gray-900' : 'text-gray-700'
-                                    }`}>
-                                      {notification.title}
-                                    </p>
-                                    <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
-                                      {new Date(notification.createdAt).toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                      })}
-                                    </span>
-                                  </div>
-                                  <p className="text-sm text-gray-600 leading-relaxed">
-                                    {notification.message}
-                                  </p>
-                                  {!notification.read && (
-                                    <div className="mt-2">
-                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        New
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <div className="mx-auto h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                            <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5V12h-5l5-5 5 5h-5v5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                            </svg>
-                          </div>
-                          <h4 className="text-sm font-medium text-gray-900 mb-1">No notifications</h4>
-                          <p className="text-xs text-gray-500">You're all caught up!</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* User Menu */}
-              <div className="relative user-menu-container">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowUserMenu(!showUserMenu);
-                  }}
-                  className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  <div className="h-8 w-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                    <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
-                  <svg className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {/* User Dropdown Menu */}
-                {showUserMenu && (
-                  <div className="absolute right-0 mt-3 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-[60] animate-fade-in-up">
-                    <div className="p-4">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="h-10 w-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                          <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">Admin User</div>
-                          <div className="text-sm text-gray-500">admin@wea.org</div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <Link
-                          href="/settings"
-                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg flex items-center space-x-2"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <span>Settings</span>
-                        </Link>
-
-                        <Link
-                          href="/system-status"
-                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg flex items-center space-x-2"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                          </svg>
-                          <span>System Status</span>
-                        </Link>
-
-                        <Link
-                          href="/help-support"
-                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg flex items-center space-x-2"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>Help & Support</span>
-                        </Link>
-
-                        <div className="border-t border-gray-100 mt-2 pt-2">
-                          <button
-                            onClick={handleLogout}
-                            className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center space-x-2"
-                          >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            <span>Logout</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
 
             </div>
           </div>
@@ -693,7 +418,7 @@ export default function AttendeesPage() {
                               {getStatusBadge(attendee.checkedIn, attendee.checkedInAt)}
                             </td>
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                              <img src={attendee.qrCode} alt="QR Code" className="w-16 h-16 rounded-lg shadow-md" />
+                              <Image src={attendee.qrCode} alt="QR Code" width={64} height={64} className="w-16 h-16 rounded-lg shadow-md" unoptimized />
                             </td>
                           </tr>
                         ))}
@@ -718,7 +443,7 @@ export default function AttendeesPage() {
                         </div>
 
                         <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                          <img src={attendee.qrCode} alt="QR Code" className="w-20 h-20 mx-auto rounded-lg shadow-md" />
+                          <Image src={attendee.qrCode} alt="QR Code" width={80} height={80} className="w-20 h-20 mx-auto rounded-lg shadow-md" unoptimized />
                         </div>
 
                         <div className="mb-4">

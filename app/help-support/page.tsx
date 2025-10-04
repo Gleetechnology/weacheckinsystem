@@ -28,7 +28,7 @@ export default function HelpSupportPage() {
       return;
     }
     setToken(storedToken);
-  }, []);
+  }, [router]);
 
   const faqs: FAQ[] = [
     {
@@ -219,7 +219,7 @@ export default function HelpSupportPage() {
                 <div>
                   <div className="mb-6">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Contact Support</h2>
-                    <p className="text-gray-600">Need help? Send us a message and we'll get back to you as soon as possible.</p>
+                    <p className="text-gray-600">Need help? Send us a message and we&apos;ll get back to you as soon as possible.</p>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

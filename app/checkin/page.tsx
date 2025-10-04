@@ -9,12 +9,13 @@ export default function CheckinPage() {
   const [scanning, setScanning] = useState(false);
   const [message, setMessage] = useState('');
 
+  // We intentionally start scanning on mount and cleanup on unmount
   useEffect(() => {
     startScanning();
     return () => {
       stopScanning();
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startScanning = async () => {
     if (!videoRef.current) return;

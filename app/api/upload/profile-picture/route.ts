@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { uploadImageBuffer } from '@/lib/cloudinary';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,32 +33,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File size must be less than 2MB' }, { status: 400 });
     }
 
-    // Generate unique filename
+    // Prepare upload
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 15);
     const extension = file.name.split('.').pop();
     const filename = `profile_${timestamp}_${randomString}.${extension}`;
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'profiles');
-    try {
-      await mkdir(uploadsDir, { recursive: true });
-    } catch (error) {
-      // Directory might already exist, continue
-    }
-
-    // Save file
-    const filePath = join(uploadsDir, filename);
+    // Read file bytes
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
 
-    // Return the public URL
-    const url = `/uploads/profiles/${filename}`;
+    // Upload to Cloudinary (serverless-friendly)
+    const secureUrl = await uploadImageBuffer(buffer, 'wea/profiles', filename);
 
-    return NextResponse.json({ url, filename });
+    return NextResponse.json({ url: secureUrl, filename });
   } catch (error) {
     console.error('Profile picture upload error:', error);
+    // Provide helpful message when Cloudinary isn't configured
+    if (process.env.CLOUDINARY_CLOUD_NAME == null) {
+      return NextResponse.json({
+        error: 'Upload failed: Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in environment.'
+      }, { status: 500 });
+    }
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

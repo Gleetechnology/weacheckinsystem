@@ -60,7 +60,6 @@ export async function GET(request: NextRequest) {
           // Convert data URL to buffer
           const base64Data = attendee.qrCode.split(',')[1];
           if (base64Data) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const imageBuffer = Buffer.from(base64Data, 'base64') as any;
 
             // Add image to workbook

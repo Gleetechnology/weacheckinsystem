@@ -57,14 +57,14 @@ export default function ReportsPage() {
       return;
     }
     setToken(storedToken);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (token) {
       fetchStats();
       fetchReportsData();
     }
-  }, [token]);
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchStats = async () => {
     try {

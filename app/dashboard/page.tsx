@@ -77,7 +77,7 @@ export default function DashboardPage() {
       return;
     }
     setToken(storedToken);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (token) {
@@ -87,7 +87,7 @@ export default function DashboardPage() {
       fetchNotifications();
       setPage(1);
     }
-  }, [token]);
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchStats = async () => {
     const res = await fetch('/api/stats', {
@@ -511,7 +511,7 @@ export default function DashboardPage() {
                             </svg>
                           </div>
                           <h4 className="text-sm font-medium text-gray-900 mb-1">No notifications</h4>
-                          <p className="text-xs text-gray-500">You're all caught up!</p>
+                          <p className="text-xs text-gray-500">You&apos;re all caught up!</p>
                         </div>
                       )}
                     </div>

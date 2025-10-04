@@ -19,7 +19,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./app/src/*"]
+      "@/*": ["./*"]
     }
   },
   "include": ["next-env.d.ts", "app/**/*.ts", "app/**/*.tsx", "middleware.ts", "next.config.ts", "scripts/**/*.ts", "lib/**/*.ts", ".next/types/**/*.ts"],

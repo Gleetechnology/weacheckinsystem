@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && npx prisma migrate deploy && npx ts-node scripts/seedAdmin.ts && next build && cp _redirects .next/",
+    "build": "prisma generate && npx prisma migrate deploy && next build && cp _redirects .next/",
     "start": "next start",
     "lint": "eslint"
   },

@@ -1,4 +1,4 @@
-const { PrismaClient } = require('../app/src/generated/prisma');
+import { PrismaClient } from '../app/src/generated/prisma';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;

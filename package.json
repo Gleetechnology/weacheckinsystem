@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build && cp _redirects .next/",
+    "build": "prisma generate && next build && node -e \"const fs = require('fs'); fs.copyFileSync('_redirects', '.next/_redirects');\"",
     "start": "next start",
     "lint": "eslint"
   },

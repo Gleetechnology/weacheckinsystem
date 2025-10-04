@@ -3,4 +3,4 @@
   publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "18.17.1"
+  NODE_VERSION = "20.17.0"

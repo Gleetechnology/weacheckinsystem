@@ -2,6 +2,9 @@
   "name": "app",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=18.17.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && npx prisma migrate deploy && npx ts-node scripts/seedAdmin.ts && next build && cp _redirects .next/",

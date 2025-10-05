@@ -2,12 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import * as XLSX from 'xlsx';
 import QRCode from 'qrcode';
+import jwt from 'jsonwebtoken';
 import { createPrismaClient } from '@/lib/prisma';
 import { notifyBulkUpload } from '../../../lib/notifications';
 
 export async function POST(request: NextRequest) {
   const prisma = createPrismaClient();
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+    }
+
+    try {
+      jwt.verify(token, process.env.JWT_SECRET!);
+    } catch (jwtError) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
 

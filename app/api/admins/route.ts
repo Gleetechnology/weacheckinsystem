@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { createPrismaClient } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
@@ -70,11 +71,29 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const prisma = createPrismaClient();
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string; username: string };
+    } catch (jwtError) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
     if (!id) {
       return NextResponse.json({ error: 'Admin ID is required' }, { status: 400 });
+    }
+
+    // Prevent deleting yourself
+    if (id === decoded.id) {
+      return NextResponse.json({ error: 'Cannot delete your own admin account' }, { status: 400 });
     }
 
     // Check if admin exists
@@ -86,8 +105,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Admin not found' }, { status: 404 });
     }
 
-    // Don't allow deleting the current admin (you'd need to get current admin from token)
-    // For now, just delete
     await prisma.admin.delete({
       where: { id },
     });

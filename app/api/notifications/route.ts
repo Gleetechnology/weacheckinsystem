@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 
 // GET /api/notifications - Fetch notifications
 export async function GET(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -35,11 +36,14 @@ export async function GET(request: NextRequest) {
       { error: 'Failed to fetch notifications' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 // POST /api/notifications - Create new notification
 export async function POST(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     const body = await request.json();
     const { title, message, type = 'info', attendeeId, adminId } = body;
@@ -71,5 +75,7 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to create notification' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

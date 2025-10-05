@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     console.log('DATABASE_URL:', process.env.DATABASE_URL);
     const { username, password } = await request.json();
@@ -29,5 +30,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }

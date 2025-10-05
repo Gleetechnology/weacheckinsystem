@@ -1,5 +1,5 @@
 [build]
-  command = "prisma migrate deploy && npm run build"
+  command = "npm ci && npm run build"
   publish = ".next"
 
 [build.environment]

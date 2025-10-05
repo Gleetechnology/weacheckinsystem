@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('DATABASE_URL:', process.env.DATABASE_URL);
     const { username, password } = await request.json();
 
     if (!username || !password) {

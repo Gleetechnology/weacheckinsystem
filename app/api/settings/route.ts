@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -36,10 +37,13 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching settings:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 export async function PUT(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -91,5 +95,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Error updating settings:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }

@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import { createPrismaClient } from '@/lib/prisma';
+import { verifyToken } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   const prisma = createPrismaClient();
   try {
+    // Check authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
     // Use specific event dates: Oct 27-31, 2025
     const eventStartDate = new Date('2025-10-27T00:00:00.000Z');
     const eventEndDate = new Date('2025-10-31T23:59:59.999Z');

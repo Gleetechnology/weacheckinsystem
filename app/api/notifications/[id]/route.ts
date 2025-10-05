@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 
 // PUT /api/notifications/[id] - Mark notification as read
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const prisma = createPrismaClient();
   try {
     const { id } = await params;
 
@@ -25,6 +26,8 @@ export async function PUT(
       { error: 'Failed to update notification' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -33,6 +36,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const prisma = createPrismaClient();
   try {
     const { id } = await params;
 
@@ -50,5 +54,7 @@ export async function DELETE(
       { error: 'Failed to delete notification' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import ExcelJS from 'exceljs';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     const attendees = await prisma.attendee.findMany({
       orderBy: { createdAt: 'asc' },
@@ -98,5 +99,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to generate Excel file' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }

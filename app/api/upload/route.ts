@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 import * as XLSX from 'xlsx';
 import QRCode from 'qrcode';
 import { prisma } from '@/lib/prisma';

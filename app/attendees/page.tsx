@@ -5,6 +5,20 @@ import { useRouter } from 'next/navigation';
 
 import Image from 'next/image';
 
+function formatDate(value?: string): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(date);
+  } catch {
+    return date.toLocaleString();
+  }
+}
+
 interface Attendee {
   id: string;
   name: string;
@@ -53,6 +67,23 @@ export default function AttendeesPage() {
   const router = useRouter();
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+
+  const debouncedSearch = useCallback((value: string) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current as unknown as number);
+    }
+    const timeoutId = setTimeout(() => {
+      setSearch(value);
+      setPage(1);
+    }, 400);
+    // Cast to Node-style timeout for the ref type
+    searchTimeoutRef.current = timeoutId as unknown as NodeJS.Timeout;
+  }, []);
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchInput(value);
+    debouncedSearch(value);
+  };
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');

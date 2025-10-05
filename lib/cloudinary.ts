@@ -1,17 +1,23 @@
 import { v2 as cloudinary } from 'cloudinary';
 
-const configured = Boolean(
+let configured = false;
+
+if (process.env.CLOUDINARY_URL) {
+  // The SDK reads CLOUDINARY_URL automatically; set secure urls
+  cloudinary.config({ secure: true });
+  configured = true;
+} else if (
   process.env.CLOUDINARY_CLOUD_NAME &&
   process.env.CLOUDINARY_API_KEY &&
   process.env.CLOUDINARY_API_SECRET
-);
-
-if (configured) {
+) {
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
     api_key: process.env.CLOUDINARY_API_KEY!,
     api_secret: process.env.CLOUDINARY_API_SECRET!,
+    secure: true,
   });
+  configured = true;
 }
 
 export async function uploadImageBuffer(buffer: Buffer, folder = 'wea/profiles', filename?: string): Promise<string> {

@@ -93,12 +93,26 @@ Local development workflow
 - Use /checkin to scan and POST qrData to /api/checkin.
 - Download current data via /api/download/excel (UI provides links that can append token via querystring when needed).
 
-Deployment notes
-- From app/README.md (Netlify):
-  - Build command: prisma migrate deploy && npm run build
-  - Publish directory: .next
-  - Node version: 18
-  - Required env: DATABASE_URL, DIRECT_URL, JWT_SECRET
+Deployment (Netlify)
+- Netlify configuration is provided in `netlify.toml`:
+  - Build command: `prisma migrate deploy && npm run build`
+  - Publish directory: `.next`
+  - Node version: 20
+  - Plugin: `@netlify/plugin-nextjs`
+- Required environment variables (set in Netlify site settings → Environment):
+  - `DATABASE_URL` — PostgreSQL connection URL
+  - `DIRECT_URL` — PostgreSQL direct URL for migrations (optional but recommended)
+  - `JWT_SECRET` — secret for signing/verifying JWTs
+  - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` — for profile uploads (optional; required if using uploads)
+- Runtime/layout notes:
+  - All Next.js API route handlers declare `export const runtime = 'nodejs'` to run on Node functions (Prisma-compatible).
+  - `middleware.ts` runs on Edge and only checks token presence; JWT verification happens inside API routes.
+  - Redirects are provided via `_redirects` and `app/_redirects` to ensure Next routing works on Netlify.
+- Deploy steps:
+  1) Push to the `main` branch (or connect repo in Netlify) and trigger a deploy.
+  2) Ensure env vars above are configured before the first deploy.
+  3) Netlify will run migrations (`prisma migrate deploy`) and build the app.
+  4) After deploy, verify DB access via `/api/debug/db` and login via `/login`.
 
 Gotchas and nuances
 - ESLint flat config lives in app/eslint.config.mjs; pass --config when invoking from repo root.

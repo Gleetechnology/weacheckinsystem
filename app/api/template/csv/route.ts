@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 import * as XLSX from 'xlsx';
 
 export async function GET() {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 import ExcelJS from 'exceljs';
 import { prisma } from '@/lib/prisma';
 

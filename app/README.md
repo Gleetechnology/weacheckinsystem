@@ -47,7 +47,7 @@ Set the following environment variables in your Netlify dashboard:
 2. Set the build settings:
    - Build command: `prisma migrate deploy && npm run build`
    - Publish directory: `.next`
-   - Node version: 18
+  - Node version: 20
 3. Add the environment variables above
 4. Deploy
 

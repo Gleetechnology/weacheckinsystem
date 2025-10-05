@@ -152,6 +152,31 @@ export default function ReportsPage() {
   const avgCheckinsPerDay = checkinTrend.length > 0 ? Math.round(checkinTrend.reduce((sum, day) => sum + day.count, 0) / checkinTrend.length) : 0;
   const peakCheckinDay = checkinTrend.length > 0 ? checkinTrend.reduce((max, day) => day.count > max.count ? day : max, checkinTrend[0]) : null;
 
+  const handleExportExcel = async () => {
+    try {
+      const response = await fetch('/api/download/excel', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download Excel file');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'attendees_with_qr.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export Excel file. Please try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen">
       {/* Enhanced Header */}
@@ -777,7 +802,10 @@ export default function ReportsPage() {
                         </div>
                       </button>
 
-                      <button className="flex items-center justify-center px-4 py-4 border-2 border-blue-200 bg-blue-50 rounded-xl hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 group">
+                      <button
+                        onClick={handleExportExcel}
+                        className="flex items-center justify-center px-4 py-4 border-2 border-blue-200 bg-blue-50 rounded-xl hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 group"
+                      >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">

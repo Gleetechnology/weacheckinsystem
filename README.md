@@ -1,7 +1,3 @@
-# WARP.md
-
-This file provides guidance to WARP (warp.dev) when working with code in this repository.
-
 Project overview
 - Stack: Next.js (App Router, TypeScript) + Prisma ORM (PostgreSQL). Styling via TailwindCSS v4. Uses ExcelJS/XLSX for import/export, ZXing for QR scanning, and qrcode for QR generation. Auth uses JWT.
 - Node version: 18 (see package.json engines)

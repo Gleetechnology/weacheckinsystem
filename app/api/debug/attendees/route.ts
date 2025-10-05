@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     // Get basic stats
     const totalAttendees = await prisma.attendee.count();
@@ -85,5 +86,7 @@ export async function GET(request: NextRequest) {
       { error: 'Failed to fetch debug data' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

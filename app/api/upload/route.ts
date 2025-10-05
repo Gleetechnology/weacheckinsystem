@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import * as XLSX from 'xlsx';
 import QRCode from 'qrcode';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 import { notifyBulkUpload } from '../../../lib/notifications';
 
 export async function POST(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -441,5 +442,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json({ error: `Upload failed: ${(error as Error).message}` }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }

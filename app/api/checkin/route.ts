@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 import { notifyAttendeeCheckin } from '../../../lib/notifications';
 
 export async function POST(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     const { qrData } = await request.json();
 
@@ -34,5 +35,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }

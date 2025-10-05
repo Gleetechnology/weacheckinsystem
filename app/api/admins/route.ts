@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     const admins = await prisma.admin.findMany({
       select: {
@@ -18,10 +19,13 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to fetch admins' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 export async function POST(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     const { username, password } = await request.json();
 
@@ -58,10 +62,13 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to create admin' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 export async function DELETE(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -89,5 +96,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to delete admin' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }

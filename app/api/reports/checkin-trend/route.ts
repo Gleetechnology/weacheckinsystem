@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     // Use specific event dates: Oct 27-31, 2025
     const eventStartDate = new Date('2025-10-27T00:00:00.000Z');
@@ -74,5 +75,7 @@ export async function GET(request: NextRequest) {
       { error: 'Failed to fetch checkin trend' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

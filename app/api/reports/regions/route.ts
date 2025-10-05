@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     // Get region breakdown with proper null handling
     const regionData = await prisma.attendee.groupBy({
@@ -61,5 +62,7 @@ export async function GET(request: NextRequest) {
       { error: 'Failed to fetch regions data' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

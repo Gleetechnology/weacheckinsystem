@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
-import { prisma } from '@/lib/prisma';
+import { createPrismaClient } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
+  const prisma = createPrismaClient();
   try {
     // Get position breakdown from multiple position fields
     const positionData = await prisma.attendee.groupBy({
@@ -101,5 +102,7 @@ export async function GET(request: NextRequest) {
       { error: 'Failed to fetch positions data' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

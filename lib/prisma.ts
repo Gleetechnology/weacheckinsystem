@@ -19,7 +19,7 @@ export function createPrismaClient() {
     log: ['error', 'warn', 'query'],
     datasources: {
       db: {
-        url: process.env.DATABASE_URL,
+        url: process.env.DATABASE_URL + "?prepareThreshold=0",
       },
     },
   });

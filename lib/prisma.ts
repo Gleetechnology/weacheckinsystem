@@ -14,8 +14,9 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 // For serverless environments, create a new client per request
 export function createPrismaClient() {
+  console.log('Creating Prisma client with DATABASE_URL:', process.env.DATABASE_URL ? 'set' : 'not set');
   return new PrismaClient({
-    log: ['error'],
+    log: ['error', 'warn', 'query'],
     datasources: {
       db: {
         url: process.env.DATABASE_URL,

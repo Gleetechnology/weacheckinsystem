@@ -26,26 +26,35 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('Admin creation request received');
   const prisma = createPrismaClient();
   try {
+    console.log('Parsing request body');
     const { username, password } = await request.json();
+    console.log('Request parsed:', { username: username ? 'provided' : 'missing', password: password ? 'provided' : 'missing' });
 
     if (!username || !password) {
+      console.log('Missing username or password');
       return NextResponse.json({ error: 'Username and password are required' }, { status: 400 });
     }
 
+    console.log('Checking for existing admin');
     // Check if admin already exists
     const existingAdmin = await prisma.admin.findUnique({
       where: { username },
     });
+    console.log('Existing admin check result:', existingAdmin ? 'exists' : 'not found');
 
     if (existingAdmin) {
       return NextResponse.json({ error: 'Admin with this username already exists' }, { status: 400 });
     }
 
+    console.log('Hashing password');
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('Password hashed successfully');
 
+    console.log('Creating admin in database');
     // Create admin
     const admin = await prisma.admin.create({
       data: {
@@ -58,12 +67,14 @@ export async function POST(request: NextRequest) {
         createdAt: true,
       },
     });
+    console.log('Admin created successfully:', admin.id);
 
     return NextResponse.json({ admin, message: 'Admin created successfully' });
   } catch (error) {
-    console.error(error);
+    console.error('Admin creation error:', error);
     return NextResponse.json({ error: 'Failed to create admin' }, { status: 500 });
   } finally {
+    console.log('Disconnecting prisma');
     await prisma.$disconnect();
   }
 }
